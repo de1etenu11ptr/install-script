@@ -1,0 +1,27 @@
+# who where = '('as_user(':'as_group)*')' cmd_list
+root ALL=(ALL:ALL) ALL
+
+# Power management
+##USER## ALL = (ALL) NOPASSWD: /usr/bin/systemctl poweroff
+##USER## ALL = (ALL) NOPASSWD: /usr/bin/systemctl reboot
+##USER## ALL = (ALL) NOPASSWD: /usr/bin/systemctl suspend
+
+# Mounting removable media
+##USER## ALL = (ALL) NOPASSWD: /usr/bin/mount /dev/sd* /media/*
+##USER## ALL = (ALL) NOPASSWD: /usr/bin/umount /media/*
+
+# Mounting encrypted devices
+##USER## ALL = (ALL) NOPASSWD: /usr/bin/mount --types ecryptfs * /media/*
+##USER## ALL = (ALL) NOPASSWD: /usr/bin/cat /root/.ecryptfs/sig-cache.txt
+##USER## ALL = (ALL) NOPASSWD: /usr/bin/head -n1 /root/.ecryptfs/sig-cache.txt
+
+# Network
+##USER## ALL = (ALL) NOPASSWD: /usr/bin/iwctl station * scan
+##USER## ALL = (ALL) NOPASSWD: /usr/bin/iwctl station * show
+##USER## ALL = (ALL) NOPASSWD: /usr/bin/iwctl station * get-networks 
+
+# Pacman management
+##USER## ALL = (ALL) NOPASSWD: /usr/bin/find ^/etc/ -name \*\.pacnew -o -name \*\.pacsave$
+
+# Actual User
+###USER### ALL = (ALL) NOPASSWD: /usr/bin/make

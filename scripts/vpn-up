@@ -1,0 +1,7 @@
+#!/usr/bin/bash
+
+iptables --table filter -P INPUT DROP
+iptables --table filter -P OUTPUT DROP
+iptables --table filter -P FORWARD DROP
+
+ip link set wg0 up

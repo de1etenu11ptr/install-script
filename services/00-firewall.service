@@ -1,0 +1,13 @@
+[Unit]
+Description = A service that loads the firewall rules set in the script found in '/usr/local/sbin/'
+After = network-online.target my-excluded-ips.service
+Requires = my-excluded-ips.service  network-online.target
+
+[Service]
+Type = oneshot
+EnvironmentFile=/run/vpn-exclusions.env
+ExecStart = /usr/bin/bash -c '/usr/local/bin/firewall-setup'
+# journalctl --flush --rotate --vacuum-time=1s
+
+[Install]
+WantedBy = multi-user.target

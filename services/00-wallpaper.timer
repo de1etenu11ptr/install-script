@@ -1,0 +1,12 @@
+[Unit]
+Description=Timer for how often to update wallpaper
+Requires=wallpaper.service
+
+[Timer]
+OnUnitActiveSec=20s
+OnBootSec=20s
+#Persistent=true
+Unit=wallpaper.service
+
+[Install]
+WantedBy=timers.target

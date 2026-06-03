@@ -1,0 +1,17 @@
+[NetDev]
+Name=wg0
+Kind=wireguard
+Description=WireGuard VPN Interface (Device: <DeviceName|Unknown>)
+
+
+[WireGuard]
+PrivateKey=<PrivateKey>
+FirewallMark=<FirewallMark|0x19>
+ListenPort=<ListenPort>
+RouteTable=off
+
+[WireGuardPeer]
+PublicKey=<PublickKey> 
+Endpoint=<Endpoint>:<EndpointPort>
+AllowedIPs=0.0.0.0/0  
+AllowedIPs=::0/0

@@ -1,0 +1,12 @@
+[Unit]
+Description=A service that changes the wallpaper of the user periodically
+After = graphical.target
+Wants = graphical.target
+
+[Service]
+Type=oneshot
+Environment="DISPLAY=:0"
+ExecStart=/bin/bash -lc "/usr/bin/echo hi;"
+
+[Install]
+WantedBy = graphical.target

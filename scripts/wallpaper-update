@@ -1,0 +1,62 @@
+#!/bin/bash
+
+# Setting constants
+## Setting the file used for logging, as well as creating its directory if it does not yet exist.
+logFolder="${HOME}/log/update-wallpaper";
+logFile="${logFolder}/wallpaper.log";
+if [[ ! -d "${logFolder}" ]]; then
+	mkdir -p "${logFolder}";
+	touch "${logFile}";
+	chmod 644 "$logFile";
+elif [[ ! -e "$logFile" ]]; then
+	touch "${logFile}";
+	chmod 644 "$logFile";
+fi
+
+## Setting the directory where the desired wallpaper images are stored.
+wallpaperDirectory="/home/<User>/Pictures/Wallpapers"
+
+# -----------------------------------------------------------------------
+
+# Script main code.
+currentWallpaper=$(gsettings get org.gnome.desktop.background picture-uri-dark);
+currentWallpaper=${currentWallpaper//\'/};
+echo "[$date]Current Wallpaper: ${currentWallpaper}" >> "$logFile"
+echo "Current Wallpaper: ${currentWallpaper}"
+
+wallpapers=()
+found=0
+for pic in ${wallpaperDirectory}/*; do
+	wallpapers[${#wallpapers[@]}]="$pic"
+	if [[ "file://$pic" == $currentWallpaper ]] || [[ "$currentWallpaper" == *adwaita* ]]; then
+		found=${#wallpapers[@]}
+	fi
+done
+if [[ $found -ge ${#wallpapers[@]} ]]; then
+	gsettings set org.gnome.desktop.background picture-uri-dark "file://${wallpapers[0]}";
+else 
+	gsettings set org.gnome.desktop.background picture-uri-dark "file://${wallpapers[$found]}";
+fi
+
+# Makes wayland switch applications on alt+tab instead of windows. Implemented because in certain instances where there is a wmclass or app_id mismatch, it becomes bothersome to have a QOL feature not work.
+gsettings set org.gnome.desktop.wm.keybindings switch-windows        "['<Alt>Tab']"
+gsettings set org.gnome.desktop.wm.keybindings switch-windows-backward "['<Alt><Shift>Tab']"
+gsettings set org.gnome.desktop.wm.keybindings switch-applications         "[]"
+gsettings set org.gnome.desktop.wm.keybindings switch-applications-backward "[]"
+
+currentWallpaper=$(gsettings get org.gnome.desktop.background picture-uri-dark);
+
+# -----------------------------------------------------------------------
+
+# Logging
+## Deleting the logfile if its size is greater than X, where in this case X = 10Mb, and replacing it with a new file with the correct permissions.
+logSize=( $(ls -l "$logFile") );
+logSize=$(( ${logSize[4]} ));
+if [[ $logSize -gt 10000000 ]]; then
+	rm "$logFile";
+	touch "${logFile}";
+	chmod 644 "$logFile";
+fi
+## Logging the wallpaper image now being used.
+echo "[$date]Changed wallpaper to: ${currentWallpaper}" >> "$logFile";
+echo "Changed wallpaper to: ${currentWallpaper}";

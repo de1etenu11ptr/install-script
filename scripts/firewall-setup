@@ -1,0 +1,106 @@
+# Setup default drop targets
+
+## Flushes the firewall rules already setup.
+iptables --table filter -F OUTPUT
+iptables --table filter -F INPUT
+iptables --table filter -F FORWARD
+## Drops all packets locally generated as the default target.
+iptables --table filter -P OUTPUT DROP
+## Drops all packets being received as the default target.
+iptables --table filter -P INPUT DROP
+## Drops all packets that are being routed through the device to another as the default target. This is a single PC and not a NAT gateway (e.g. a router).
+iptables --table filter -P FORWARD DROP
+
+# -----------------------------------------------
+
+# Setting up the firewall rules that accept certain outgoing packets provided they meet specific conditions
+
+## Block all trafic from a user
+NOINET_UID=$(cat /etc/group | grep -E "^no-internet-user:" | sed -E "s/.*:.*:(.*):/\1/g")
+if [[ -n ${NOINET_UID} ]]; then
+	# iptables --table filter -A OUTPUT -m owner --uid-owner ${NOINET_UID} -m limit --limit 2/minute -j LOG --log-prefix "[Restricted Program Dropped] - " --log-level 4;
+	iptables --table filter -A OUTPUT -m owner --uid-owner ${NOINET_UID} -j DROP;
+fi
+
+## Block all trafic from a group
+NOINET_GID=$(cat /etc/group | grep -E "^no-internet:" | sed -E "s/.*:.*:(.*):/\1/g")
+if [[ -n ${NOINET_GID} ]]; then
+	# iptables --table filter -A OUTPUT -m owner --gid-owner ${NOINET_GID} -m limit --limit 2/minute -j LOG --log-prefix "[Restricted Program Dropped] - " --log-level 4;
+	iptables --table filter -A OUTPUT -m owner --gid-owner ${NOINET_GID} -j DROP;
+fi 
+
+## Accepts traffic for our localhost interface to ourselves.
+iptables --table filter -A OUTPUT -o lo -j ACCEPT
+
+## Accepts packets being sent out from the VPN interface.
+iptables --table filter -A OUTPUT -o wg0 -j ACCEPT
+
+## Accepts packets being sent out from the physical interface (the virtual VPN interface can't send out packets) as long as they have been marked by the VPN interface first (meaning they have been encrypted by it before being sent to the physical interface (Out NIC).
+iptables --table filter -A OUTPUT -o wlan0 -m mark --mark <FirewallMark> -j ACCEPT
+
+## Accepts packets being sent to a captive portal.
+iptables --table filter -A OUTPUT -o wlan0 -d 172.16.0.1 -j ACCEPT
+
+## Router
+iptables --table filter -A OUTPUT -o wlan0 -d 192.168.0.1 -j ACCEPT
+
+## Logs all rejected connections/traffic.
+### '-m limit' applies the limit matching module to limit logging.
+### '--limit 2/minute' indicates to the limit matching module that similar packets must be limited to 2 logs per minute. Other options could have been, '2/second', '2/minute', '2/hour', and '2/day'.
+### '--log-level' indicates it is a warning. Options are 0 to 7, where 0 indicates an emergency, 6 indicates information, and 7 indicates a debugging log. [docs](https://www.kernel.org/doc/html/next/core-api/printk-basics.html)
+# iptables --table filter -A OUTPUT -m limit --limit 2/minute -j LOG --log-prefix "[IPTables Outgoing Dropped] - " --log-level 4
+
+
+# Setting up the firewall rules that accept certain incoming packets.
+
+# Allow local loop-back.
+iptables --table filter -A INPUT -i lo -j ACCEPT
+
+## For the captive portal requests. The portal never initiates a fresh connection to us. Our browser opens a connection, e.g. `tcp 12345 -> 172.16.0.1:80/443`, and the reply comes back on that same connection. So we only need to allow return traffic.
+### It allows related/established traffic.
+iptables --table filter -A INPUT  -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
+
+## Allows connections on the port the VPN uses to connect to us.
+iptables --table filter -A INPUT -i wlan0 -p udp --dport 51820 -j ACCEPT
+
+## Allows SSH from our LAN
+iptables --table filter -A INPUT -i wlan0 -s 192.168.1.0/24 -p tcp --dport 22 -j ACCEPT
+
+## Router
+iptables --table filter -A INPUT -i wlan0 -s 192.168.0.1 -j ACCEPT
+
+## VPN Exlusions
+IFS=',' read -ra IPS <<< "$EXCLUDED_IPS"
+for ip in "${IPS[@]}"; do
+	iptables --table filter -A OUTPUT -o wlan0 -d "$ip" -j ACCEPT
+	iptables --table filter -A INPUT -i wlan0 -s "$ip" -j ACCEPT
+done
+
+## Logs all rejected traffic.
+# iptables --table filter -A INPUT -m limit --limit 2/minute -j LOG --log-prefix "[IPTables Incoming Dropped] - " --log-level 4
+
+# -----------------------------------------------
+
+# IPv6 version of the firewall rules above paralleled.
+
+ip6tables --table filter -F OUTPUT
+ip6tables --table filter -P OUTPUT DROP
+if [[ -n ${NOINET_UID} ]]; then
+#	ip6tables --table filter -A OUTPUT -m owner --uid-owner ${NOINET_UID} -m limit --limit 2/minute -j LOG --log-prefix "[Restricted Program IP6 Dropped] - " --log-level 4;
+	ip6tables --table filter -A OUTPUT -m owner --uid-owner ${NOINET_UID} -j DROP;
+#	ip6tables --table filter -A OUTPUT -m owner --gid-owner ${NOINET_GID} -m limit --limit 2/minute -j LOG --log-prefix "[Restricted Program IP6 Dropped] - " --log-level 4;
+	ip6tables --table filter -A OUTPUT -m owner --gid-owner ${NOINET_GID} -j DROP;
+fi
+ip6tables --table filter -A OUTPUT -o wg0 -j ACCEPT
+ip6tables --table filter -A OUTPUT -o wlan0 -m mark --mark <FirewallMark> -j ACCEPT
+ip6tables --table filter -A OUTPUT -o lo -j ACCEPT
+# ip6tables --table filter -A OUTPUT -m limit --limit 2/minute -j LOG --log-prefix "[IP6Tables Outgoing Dropped] - " --log-level 4
+
+ip6tables --table filter -F INPUT
+ip6tables --table filter -P INPUT DROP
+ip6tables --table filter -A INPUT -i lo -j ACCEPT
+ip6tables --table filter -A INPUT  -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
+ip6tables --table filter -A INPUT -i wlan0 -p udp --dport 51820 -j ACCEPT
+# ip6tables --table filter -A INPUT -m limit --limit 2/minute -j LOG --log-prefix "[IPTables Incoming Dropped] - " --log-level 4
+
+# -----------------------------------------------

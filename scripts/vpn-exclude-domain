@@ -1,0 +1,23 @@
+#!/bin/bash
+
+DOMAINS=(
+	"libgen.li"
+	"booksdl.lc"
+)
+DOMAIN_IPS=""
+PRIORITY=999
+TABLE="main"
+
+for domain in "${DOMAINS[@]}"; do
+	IFS=$'\n' ips=( $(dig +short $domain | grep -E "^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$") )
+	for ip in "${ips[@]}"; do
+		if [[ -n "$ip" ]]; then
+			ip rule del to $ip priority $PRIORITY table $TABLE 2>/dev/null
+			ip rule add to $ip priority $PRIORITY table $TABLE
+			DOMAIN_IPS+="$ip,"
+		fi
+	done
+done
+
+DOMAIN_IPS="${DOMAIN_IPS%,}"
+echo "EXCLUDED_IPS=$DOMAIN_IPS" > /run/vpn-exclusions.env

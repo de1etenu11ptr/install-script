@@ -1,0 +1,68 @@
+# Audio
+## Makes ALSA applications route through PipeWire (so Alsa only apps still work)
+pipewire-alsa
+## Drop-in replacement for PulseAudio, so apps expecting PulseAudio work transparently
+pipewire-pulse
+## Same but for JACK (pro audio apps)
+pipewire-docs
+## Simple TUI mixer for pipewire
+wiremix
+
+######
+
+# Development
+php
+cmake
+ctags
+valgrind
+gdb
+## Tools for building arch linux packages
+base-devel
+## Git extension for versioning large files
+git-lfs
+## Git extension for rewriting git repo history 
+git-filter-repo
+
+# Development Formatting Tools
+shfmt
+prettier
+pyright
+python-black
+python-html2text
+python-jsbeautifier
+
+######
+
+# Utilities
+7zip
+unrar
+lshw
+usbutils
+btop
+## Updates pacman mirrorlist automatically
+reflector
+sudo
+gdu
+stow
+#dust
+
+######
+
+# Network Utilities
+## IP routing utilities
+iproute2
+## TCP/IP tool
+openbsd-netcat
+## For network discovery and security auditing
+nmap
+
+######
+
+# Display
+## Query and change monitor settings using DDC/CI & USB
+ddcutil
+
+######
+
+# Fonts
+noto-fonts

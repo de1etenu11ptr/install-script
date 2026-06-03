@@ -1,0 +1,49 @@
+# Programmatic path completion for user specified file paths.
+
+# Define a base directory for relative paths.
+export BASE_DIRECTORY=/tmp/basedir
+
+# Define the completion function
+function _no-internet() {
+	# `COMP_WORDS` is an array containing all individual words in the current command line.
+	# `COMP_CWORD` is an index of the word containing the current cursor position.
+	# `COMPREPLY` is an array variable from which Bash reads the possible completions.
+	# And the `compgen` command returns the array of elements from `--help`, `--verbose` and `--version` matching the current word "${cur}":
+
+	# Define local variables to store arguments
+	local curr_arg;
+
+	# If there is at least one arguments then we have a candidate, the path string that needs to be autocompleted.
+	if [[ ${#COMP_WORDS[@]} -ge 1 ]]; then
+
+		# Get the current from the command-line
+		curr_arg="${COMP_WORDS[COMP_CWORD]}";
+
+		# We only want to do our custom path-completion if a base directory is defined and the argument is a relative path
+		if [[ -n "${BASE_DIRECTORY}" ]] && [[ ${curr_arg} != /* ]]; then
+
+			# Generate the list of path-completions starting from BASE_DIRECTORY
+			COMPREPLY=( $(compgen -d -o default -- "${BASE_DIRECTORY}/${curr_arg}") );
+
+			# Don't append a space after the command-completion
+			# This is so we can continue to apply completion to subdirectories
+			compopt -o nospace;
+
+			# Return immediately
+			return 0;
+		fi
+	fi
+
+	# If no base directory is defined then apply default command-completion
+	COMPREPLY=( $(compgen -o default -- "${curr_arg}") );
+	return 0;
+}
+complete -F _no-internet no-internet
+# Options for '-o'
+## bashdefault
+### Perform the rest of the default bash completions if the compspec generates no matches.
+## default
+### Use readline's default filename completion if the compspec generates no matches.
+## filenames
+### Tell readline that the compspec generates filenames, so it can perform any filename-specific processing (like adding a slash to directory names, quoting special characters, or suppressing trailing spaces). Intended to be used with shell functions.
+

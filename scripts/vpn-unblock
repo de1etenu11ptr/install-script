@@ -1,0 +1,9 @@
+#!/usr/bin/bash
+
+iptables --table filter -D INPUT -j DROP
+iptables --table filter -D OUTPUT -j DROP
+iptables --table filter -D FORWARD -j DROP
+
+ip6tables --table filter -D INPUT -j DROP
+ip6tables --table filter -D OUTPUT -j DROP
+ip6tables --table filter -D FORWARD -j DROP

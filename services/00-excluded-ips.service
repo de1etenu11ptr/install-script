@@ -1,0 +1,11 @@
+[Unit]
+Description = A service that resolves exclusion domains, writing an ip rule to direct them to some table and also providing the IPs as a comma separated var written in the .env file /run/vpn-exclusions.env
+After = network-online.target
+Requires = network-online.target
+
+[Service]
+Type = oneshot
+ExecStart = /usr/bin/bash -c '/usr/local/bin/vpn-exclude-domain'
+
+[Install]
+WantedBy = multi-user.target
