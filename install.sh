@@ -115,7 +115,7 @@ function get_mem_gib() {
 }
 
 function pacman_install() {
-	pacman $@ || \
+	pacman $@ ||
 		error 400 "pacman failed in installing \"$@\" (pacman status code $?)"
 }
 
@@ -124,11 +124,11 @@ function mount_partitions() {
 	local swap="$2"
 	local boot="$3"
 	log "mounting partitions"
-	mount "/dev/${root}" /mnt || \
+	mount "/dev/${root}" /mnt ||
 		error 207 "failed to mount (mount status code $?)"
-	mount --mkdir "/dev/${boot}" /mnt/boot || \
+	mount --mkdir "/dev/${boot}" /mnt/boot ||
 		error 208 "failed to mount (mount status code $?)"
-	swapon "/dev/${swap}" || \
+	swapon "/dev/${swap}" ||
 		error 209 "failed to turn swap on (swapon status code $?)"
 }
 
@@ -137,11 +137,11 @@ function format_partitions() {
 	local swap="$2"
 	local boot="$3"
 	log "formatting partitions"
-	mkfs.ext4 "/dev/${root}" || \
+	mkfs.ext4 "/dev/${root}" ||
 		error 204 "failed to format root partition (mkfs status code $?)"
-	mkswap "/dev/${swap}" || \
+	mkswap "/dev/${swap}" ||
 		error 205 "failed to format swap partition (mkswap status code $?)"
-	mkfs.fat -F 32 "/dev/${boot}" || \
+	mkfs.fat -F 32 "/dev/${boot}" ||
 		error 206 "failed to format efi system partition (mkfs status code $?)"
 }
 
@@ -171,11 +171,11 @@ function partition() {
 	log "root size in bytes: ${ROOT_BYTES} ($(($ROOT_BYTES / 1024 / 1024 / 1024))GiB)"
 
 	BOOT_START=2048
-	BOOT_END=$(( $BOOT_START + $BOOT_BYTES / $blk_phy_sec - 1 ))
-	SWAP_START=$(( $BOOT_END + 1 ))
-	SWAP_END=$(( $SWAP_START + $SWAP_BYTES / $blk_phy_sec - 1 ))
-	ROOT_START=$(( $SWAP_END + 1 ))
-	ROOT_END=$(( $ROOT_START + $ROOT_BYTES / $blk_phy_sec - 1 ))
+	BOOT_END=$(($BOOT_START + $BOOT_BYTES / $blk_phy_sec - 1))
+	SWAP_START=$(($BOOT_END + 1))
+	SWAP_END=$(($SWAP_START + $SWAP_BYTES / $blk_phy_sec - 1))
+	ROOT_START=$(($SWAP_END + 1))
+	ROOT_END=$(($ROOT_START + $ROOT_BYTES / $blk_phy_sec - 1))
 
 	[[ ! -z "$(findmnt | grep "/dev/${blk}p1")" ]] && umount "/dev/${blk}p1"
 	[[ ! -z "$(swapon --show | grep "/dev/${blk}p2")" ]] && swapoff "/dev/${blk}p2"
@@ -184,14 +184,14 @@ function partition() {
 	# wipe disk
 	sgdisk -z "/dev/$blk"
 	sgdisk -o -Z "/dev/$blk"
-	log "total sectors: $(( $blk_bytes_size / $blk_phy_sec ))"
-	sgdisk -n "1:${BOOT_START}:${BOOT_END}" -t "1:ef00" -c "1:boot" "/dev/$blk" || \
+	log "total sectors: $(($blk_bytes_size / $blk_phy_sec))"
+	sgdisk -n "1:${BOOT_START}:${BOOT_END}" -t "1:ef00" -c "1:boot" "/dev/$blk" ||
 		error 201 "failed to create boot partition (sgdisk status code $?)"
 	log "part 1: ${BOOT_START} to ${BOOT_END}"
-	sgdisk -n "2:${SWAP_START}:${SWAP_END}" -t "2:8200" -c "2:swap" "/dev/$blk" || \
+	sgdisk -n "2:${SWAP_START}:${SWAP_END}" -t "2:8200" -c "2:swap" "/dev/$blk" ||
 		error 202 "failed to create swap partition (sgdisk status code $?)"
 	log "part 2: ${SWAP_START} to ${SWAP_END}"
-	sgdisk -n "3:${ROOT_START}:${ROOT_END}" -t "3:8300" -c "3:root" "/dev/$blk" || \
+	sgdisk -n "3:${ROOT_START}:${ROOT_END}" -t "3:8300" -c "3:root" "/dev/$blk" ||
 		error 203 "failed to create root partition (sgdisk status code $?)"
 	log "part 3: ${ROOT_START} to ${ROOT_END}"
 	format_partitions "${blk}p3" "${blk}p2" "${blk}p1"
@@ -246,9 +246,9 @@ function setup_locale() {
 
 	pacman_install -S ntp
 	log "enabling network time protocol service"
-	systemctl enable ntpd.service || \
+	systemctl enable ntpd.service ||
 		error 300 "enabling service failed (systemctl status code $?)"
-	systemctl start ntpd.service || \
+	systemctl start ntpd.service ||
 		error 301 "starting service failed (systemctl status code $?)"
 }
 
@@ -300,13 +300,13 @@ function setup_audio() {
 	pacman_install -S pipewire wireplumber
 
 	log "enabling pipewire and wireplumber services"
-	systemctl --user enable pipewire.socket || \
+	systemctl --user enable pipewire.socket ||
 		error 300 "enabling socket failed (systemctl status code $?)"
-	systemctl --user start pipewire.socket || \
+	systemctl --user start pipewire.socket ||
 		error 301 "starting socket failed (systemctl status code $?)"
-	systemctl --user enable wireplumber.service || \
+	systemctl --user enable wireplumber.service ||
 		error 300 "enabling service failed (systemctl status code $?)"
-	systemctl --user start wireplumber.service || \
+	systemctl --user start wireplumber.service ||
 		error 301 "starting service failed (systemctl status code $?)"
 }
 
@@ -320,9 +320,9 @@ function setup_bluetooth() {
 		echo "options btusb enable_autosuspend=0" >> /etc/modprobe.d/bluetooth.conf
 	fi
 	log "enabling bluetooth service"
-	systemctl enable bluetooth.service || \
+	systemctl enable bluetooth.service ||
 		error 300 "enabling service failed (systemctl status code $?)"
-	systemctl start bluetooth.service || \
+	systemctl start bluetooth.service ||
 		error 301 "starting service failed (systemctl status code $?)"
 }
 
@@ -343,13 +343,13 @@ function setup_pacman() {
 	pacman_install -Syu pacman-contrib reflector
 
 	log "enabling paccache (automatic cache cleaning) and reflector (automatic mirrorlist updates) timers"
-	systemctl enable paccache.timer || \
+	systemctl enable paccache.timer ||
 		error 300 "enabling timer failed (systemctl status code $?)"
-	systemctl start paccache.timer || \
+	systemctl start paccache.timer ||
 		error 301 "starting timer failed (systemctl status code $?)"
-	systemctl enable reflector.timer || \
+	systemctl enable reflector.timer ||
 		error 300 "enabling timer failed (systemctl status code $?)"
-	systemctl start reflector.timer || \
+	systemctl start reflector.timer ||
 		error 301 "starting timer failed (systemctl status code $?)"
 }
 
@@ -380,36 +380,16 @@ function setup_sudoers() {
 }
 
 function setup_vim() {
-	local current="$PWD"
-	sudo -u "$USER" mkdir -p "/home/$USER/projects/aur/vim-git"
-	cd "/home/$USER/projects/aur/"
-
-	log "cloning vim aur repo"
-	sudo -u "$USER" git clone --depth=1 https://aur.archlinux.org/vim-git.git vim-git
-	cd vim-git
-
-	log "configuring vim PKGBUILD parameters"
-	sed -E -i "s/(\.\/configure)/\1 --disable-gui --enable-terminal/g" PKGBUILD
-	sed -E -i "s/(--with-features=)huge/\1normal/g" PKGBUILD
-	sed -E -i "s/(--with-features=)tiny/\1normal/g" PKGBUILD
-	sed -E -i "s/--enable-netbeans//g" PKGBUILD
-	sed -E -i "s/--enable-perlinterp//g" PKGBUILD
-	sed -E -i "s/--enable-rubyinterp//g" PKGBUILD
-
-	less PKGBUILD
-	local install
-	flush_typeahead
-	read -rp "Would you still like to install the vim using the PKGBUILD? " install
-	if [[ "$install" != "y" ]]; then
-		cd "$current"
-		return
-	fi
-	pacman_install -S base-devel
-	#log "building vim"
-	#su - "$USER"
-	#makepkg -srci
-	#su - "root"
-	cd "$current"
+	pacman -S vim
+	echo "set undofile" >> ~/.vimrc
+	echo "set undodir=\"\$HOME/.vim/undo-dir\"" >> ~/.vimrc
+	echo "set smartindent" >> ~/.vimrc
+	echo "set autoindent" >> ~/.vimrc
+	echo "set noexpandtab" >> ~/.vimrc
+	echo "set shiftwidth=8" >> ~/.vimrc
+	echo "set tabstop=8" >> ~/.vimrc
+	echo "set ruler=8" >> ~/.vimrc
+	echo "set relativenumber=8" >> ~/.vimrc
 }
 
 function setup_completion() {
@@ -447,17 +427,26 @@ function setup_network_interfaces() {
 	flush_typeahead
 	read -rp "Would you like to setup your VPN network interfaces now? " cont
 	[[ "$cont" != "y" ]] && return
-	local dname; local public_key ; local pkey ; local fmark; local lport; local endpoint; local eport; local dns; local ipv4 ; local ipv6
+	local dname
+	local public_key
+	local pkey
+	local fmark
+	local lport
+	local endpoint
+	local eport
+	local dns
+	local ipv4
+	local ipv6
 	flush_typeahead
-	read -rp "Device Name: " dname 
+	read -rp "Device Name: " dname
 	read -rp "Public Key: " public_key
-	read -rsp "Private Key: " pkey 
-	read -rp "Firewall Mark [0x19]: " fmark 
-	read -rp "Listen Port: " lport 
+	read -rsp "Private Key: " pkey
+	read -rp "Firewall Mark [0x19]: " fmark
+	read -rp "Listen Port: " lport
 	read -rp "Endpoint: " endpoint
-	read -rp "Endpoint Port: " eport 
-	read -rp "DNS: " dns 
-	read -rp "IPv4: " ipv4 
+	read -rp "Endpoint Port: " eport
+	read -rp "DNS: " dns
+	read -rp "IPv4: " ipv4
 	read -rp "IPv6: " ipv6
 	for file in /root/install-script/network-devices/*; do
 		fname="$(basename "$file")"
@@ -501,7 +490,6 @@ function trap_function_call() {
 
 trap 'trap_function_call' RETURN
 
-
 if [[ ! -z "$1" ]] && [[ $(is_number "$1") -eq 1 ]] && [[ $1 -ne 0 ]]; then
 	CHROOT=1
 	HOST="$2"
@@ -536,11 +524,6 @@ if [[ $CHROOT -ne 0 ]]; then
 	setup_post_install_user
 
 	setup_vim
-	if [[ -f /root/install-script/vimrc ]]; then
-		log "replacing global vimrc"
-		cat /root/install-script/vimrc > /etc/vimrc
-	fi
-
 
 	flush_typeahead
 	read -rp "Would you like to download packages in \"packages.txt\"? " tmp
@@ -551,11 +534,6 @@ if [[ $CHROOT -ne 0 ]]; then
 	setup_services
 	setup_network_interfaces
 	exit 0
-fi
-
-if [[ -f vimrc ]]; then
-	log "replacing global vimrc"
-	cat vimrc > /etc/vimrc
 fi
 
 flush_typeahead
@@ -615,7 +593,7 @@ IFS="," tmp=(
 blk="${tmp[0]}"
 blk_bytes_size="${tmp[1]}"
 blk_phy_sec="${tmp[2]}"
-blk_ttl_sectors=$(( $blk_bytes_size / $blk_phy_sec ))
+blk_ttl_sectors=$(($blk_bytes_size / $blk_phy_sec))
 log "block device: $blk"
 log "total space in bytes: ${blk_bytes_size} ($(($blk_bytes_size / 1024 / 1024 / 1024))GiB)"
 log "total sectors: $blk_ttl_sectors"
