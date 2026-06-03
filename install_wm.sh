@@ -3,6 +3,7 @@
 USER=$1
 
 function get_pkgbuild() {
+	pacman -S xorg-server xorg-xinit xorg-xrandr xorg-xsetroot firefox-developer-edition kitty
 	local current="$PWD"
 	sudo -U
 
