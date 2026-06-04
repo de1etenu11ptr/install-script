@@ -1,4 +1,5 @@
 # Audio
+pipewire
 ## Makes ALSA applications route through PipeWire (so Alsa only apps still work)
 pipewire-alsa
 ## Drop-in replacement for PulseAudio, so apps expecting PulseAudio work transparently
@@ -11,11 +12,14 @@ wiremix
 ######
 
 # Development
+gcc
+gdb
+clang
+valgrind
 php
 cmake
 ctags
-valgrind
-gdb
+pyright
 ## Tools for building arch linux packages
 base-devel
 ## Git extension for versioning large files
@@ -42,13 +46,12 @@ btop
 ## Updates pacman mirrorlist automatically
 reflector
 sudo
-gdu
-stow
-#dust
+ntp
 
 ######
 
 # Network Utilities
+openssh
 ## IP routing utilities
 iproute2
 ## TCP/IP tool
@@ -58,11 +61,50 @@ nmap
 
 ######
 
+# Backup Tools
+stow
+
+######
+
 # Display
 ## Query and change monitor settings using DDC/CI & USB
 ddcutil
 
 ######
 
+# FS Tools
+dosfstools
+e2fsprogs
+ecryptfs-utils
+exfatprogs
+ntfs-3g
+
+######
+
+# Disk Tools
+gdu
+
+######
+
 # Fonts
-noto-fonts
+terminus-font
+
+######
+
+# Xorg (X.Org Server) - Display Server Essentials. Install these if you plan on using a Xorg server for any display. (X11 is the language you use to talk to Xorg) ## Xorg X server
+xorg-server
+## Xorg initialization program
+xorg-xinit
+## Xorg property xisplayer for X
+xorg-xprop
+## Xorg primitive cmd interface to the RandR extension
+xorg-xrandr
+## User preference utility for X
+xorg-xset
+## X utility to set your root window background to a pattern or color
+xorg-xsetroot
+xorg-docs
+## X utility for managing input
+xorg-xinput
+## X clipboard manager
+xorg-xclipboard
