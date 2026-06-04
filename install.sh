@@ -381,15 +381,18 @@ function setup_sudoers() {
 
 function setup_vim() {
 	pacman -S vim
-	echo "set undofile" >> ~/.vimrc
-	echo "set undodir=\"\$HOME/.vim/undo-dir\"" >> ~/.vimrc
-	echo "set smartindent" >> ~/.vimrc
-	echo "set autoindent" >> ~/.vimrc
-	echo "set noexpandtab" >> ~/.vimrc
-	echo "set shiftwidth=8" >> ~/.vimrc
-	echo "set tabstop=8" >> ~/.vimrc
-	echo "set ruler=8" >> ~/.vimrc
-	echo "set relativenumber=8" >> ~/.vimrc
+	echo -e 'if !isdirectory($HOME."/.vim")\n\tcall mkdir($HOME."/.vim", "", 0770)\nendif' >> ~/.vimrc
+	echo -e 'if !isdirectory($HOME."/.vim/undo-dir")\n\tcall mkdir($HOME."/.vim/undo-dir", "", 0700)\nendif' >> ~/.vimrc
+	echo -e 'if !isdirectory($HOME."/.vim/backup-dir")\n\tcall mkdir($HOME."/.vim/backup-dir", "", 0700)\nendif' >> ~/.vimrc
+	echo 'set undofile' >> ~/.vimrc
+	echo 'set undodir="$HOME/.vim/undo-dir"' >> ~/.vimrc
+	echo 'set smartindent' >> ~/.vimrc
+	echo 'set autoindent' >> ~/.vimrc
+	echo 'set noexpandtab' >> ~/.vimrc
+	echo 'set shiftwidth=8' >> ~/.vimrc
+	echo 'set tabstop=8' >> ~/.vimrc
+	echo 'set ruler=8' >> ~/.vimrc
+	echo 'set relativenumber=8' >> ~/.vimrc
 }
 
 function setup_completion() {

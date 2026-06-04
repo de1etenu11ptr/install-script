@@ -22,6 +22,3 @@ root ALL=(ALL:ALL) ALL
 
 # Pacman management
 ##USER## ALL = (ALL) NOPASSWD: /usr/bin/find ^/etc/ -name \*\.pacnew -o -name \*\.pacsave$
-
-# Actual User
-###USER### ALL = (ALL) NOPASSWD: /usr/bin/make
