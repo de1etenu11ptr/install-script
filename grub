@@ -3,7 +3,9 @@
 GRUB_DEFAULT=0
 GRUB_TIMEOUT=-1
 GRUB_DISTRIBUTOR="Arch"
-GRUB_CMDLINE_LINUX_DEFAULT="loglevel=7"
+# `systemd.unified_cgroup_hierarchy=1` enables cgroups v2 support to enforce memory limits (might break programs using cgroups v1_
+# `swapaccount=1` enables limiting swap usage as cgroups only enforces memory limits for RAM and not swap
+GRUB_CMDLINE_LINUX_DEFAULT="loglevel=7 printk.time=1 printk.always_kmsg_dump=1 printk.devkmsg=ratelimit systemd.unified_cgroup_hierarchy=1 swapaccount=1"
 GRUB_CMDLINE_LINUX=""
 
 # Preload both GPT and MBR modules so that they are not missed

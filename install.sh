@@ -257,9 +257,9 @@ function setup_global_configs() {
 	echo "$HOST" > /etc/hostname
 
 	input=(
-		"./motd"
-		"./bash.bashrc"
-		"./root_ssh.conf"
+		"/root/install-script/motd"
+		"/root/install-script/bash.bashrc"
+		"/root/install-script/root_ssh.conf"
 	)
 	output=(
 		"/etc/motd"
@@ -286,8 +286,8 @@ function setup_bootloader() {
 	log "installing grub bootloader"
 	grub-install --target=x86_64-efi --efi-directory=/boot --bootloader-id="$BOOT"
 
-	if [[ -f ./grub ]]; then
-		cat ./grub >> /etc/default/grub
+	if [[ -f /root/install-script/grub ]]; then
+		cat /root/install-script/grub >> /etc/default/grub
 	fi
 
 	log "generating grub.cfg"
