@@ -275,8 +275,11 @@ function setup_global_configs() {
 }
 
 function setup_modules() {
-	log "blacklisting kernel beeping module"
-	echo "blacklist pcspkr" > /etc/modprobe.d/nobeep.conf
+	for file in /root/install-script/modules/*; do
+		fname="$(basename "$file")"
+		log "applying \"$file\" settings to modprobe"
+		cp "/root/install-script/modules/$fname" "/etc/modprobe.d/$fname"
+	done
 }
 
 function setup_bootloader() {
