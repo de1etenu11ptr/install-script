@@ -58,6 +58,7 @@ iproute2
 openbsd-netcat
 ## For network discovery and security auditing
 nmap
+bind-tools
 
 ######
 
