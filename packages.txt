@@ -24,7 +24,7 @@ pyright
 base-devel
 ## Git extension for versioning large files
 git-lfs
-## Git extension for rewriting git repo history 
+## Git extension for rewriting git repo history
 git-filter-repo
 
 # Development Formatting Tools
@@ -34,6 +34,10 @@ pyright
 python-black
 python-html2text
 python-jsbeautifier
+
+# Editor
+vim
+fzf
 
 ######
 
@@ -47,6 +51,7 @@ btop
 reflector
 sudo
 ntp
+xdg-utils
 
 ######
 

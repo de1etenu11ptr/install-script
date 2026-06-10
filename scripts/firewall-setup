@@ -36,7 +36,7 @@ iptables --table filter -A OUTPUT -o lo -j ACCEPT
 iptables --table filter -A OUTPUT -o wg0 -j ACCEPT
 
 ## Accepts packets being sent out from the physical interface (the virtual VPN interface can't send out packets) as long as they have been marked by the VPN interface first (meaning they have been encrypted by it before being sent to the physical interface (Out NIC).
-iptables --table filter -A OUTPUT -o wlan0 -m mark --mark <FirewallMark> -j ACCEPT
+iptables --table filter -A OUTPUT -o wlan0 -m mark --mark 0x19 -j ACCEPT
 
 ## Accepts packets being sent to a captive portal.
 iptables --table filter -A OUTPUT -o wlan0 -d 172.16.0.1 -j ACCEPT
@@ -48,7 +48,7 @@ iptables --table filter -A OUTPUT -o wlan0 -d 192.168.0.1 -j ACCEPT
 ### '-m limit' applies the limit matching module to limit logging.
 ### '--limit 2/minute' indicates to the limit matching module that similar packets must be limited to 2 logs per minute. Other options could have been, '2/second', '2/minute', '2/hour', and '2/day'.
 ### '--log-level' indicates it is a warning. Options are 0 to 7, where 0 indicates an emergency, 6 indicates information, and 7 indicates a debugging log. [docs](https://www.kernel.org/doc/html/next/core-api/printk-basics.html)
-# iptables --table filter -A OUTPUT -m limit --limit 2/minute -j LOG --log-prefix "[IPTables Outgoing Dropped] - " --log-level 4
+iptables --table filter -A OUTPUT -m limit --limit 2/minute -j LOG --log-prefix "[IPTables Outgoing Dropped] - " --log-level 4
 
 
 # Setting up the firewall rules that accept certain incoming packets.
@@ -69,6 +69,8 @@ iptables --table filter -A INPUT -i wlan0 -s 192.168.1.0/24 -p tcp --dport 22 -j
 ## Router
 iptables --table filter -A INPUT -i wlan0 -s 192.168.0.1 -j ACCEPT
 
+iptables --table filter -A INPUT -o wlan0 -s 172.16.0.1 -j ACCEPT
+
 ## VPN Exlusions
 IFS=',' read -ra IPS <<< "$EXCLUDED_IPS"
 for ip in "${IPS[@]}"; do
@@ -77,7 +79,7 @@ for ip in "${IPS[@]}"; do
 done
 
 ## Logs all rejected traffic.
-# iptables --table filter -A INPUT -m limit --limit 2/minute -j LOG --log-prefix "[IPTables Incoming Dropped] - " --log-level 4
+iptables --table filter -A INPUT -m limit --limit 2/minute -j LOG --log-prefix "[IPTables Incoming Dropped] - " --log-level 4
 
 # -----------------------------------------------
 
@@ -92,15 +94,15 @@ if [[ -n ${NOINET_UID} ]]; then
 	ip6tables --table filter -A OUTPUT -m owner --gid-owner ${NOINET_GID} -j DROP;
 fi
 ip6tables --table filter -A OUTPUT -o wg0 -j ACCEPT
-ip6tables --table filter -A OUTPUT -o wlan0 -m mark --mark <FirewallMark> -j ACCEPT
+ip6tables --table filter -A OUTPUT -o wlan0 -m mark --mark 0x19 -j ACCEPT
 ip6tables --table filter -A OUTPUT -o lo -j ACCEPT
-# ip6tables --table filter -A OUTPUT -m limit --limit 2/minute -j LOG --log-prefix "[IP6Tables Outgoing Dropped] - " --log-level 4
+ip6tables --table filter -A OUTPUT -m limit --limit 2/minute -j LOG --log-prefix "[IP6Tables Outgoing Dropped] - " --log-level 4
 
 ip6tables --table filter -F INPUT
 ip6tables --table filter -P INPUT DROP
 ip6tables --table filter -A INPUT -i lo -j ACCEPT
 ip6tables --table filter -A INPUT  -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
 ip6tables --table filter -A INPUT -i wlan0 -p udp --dport 51820 -j ACCEPT
-# ip6tables --table filter -A INPUT -m limit --limit 2/minute -j LOG --log-prefix "[IPTables Incoming Dropped] - " --log-level 4
+ip6tables --table filter -A INPUT -m limit --limit 2/minute -j LOG --log-prefix "[IPTables Incoming Dropped] - " --log-level 4
 
 # -----------------------------------------------

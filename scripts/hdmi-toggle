@@ -1,0 +1,57 @@
+#!/bin/bash
+
+export DISPLAY="${DISPLAY:-:0}"
+export XAUTHORITY="${XAUTHORITY:-$HOME/.Xauthority}"
+
+MAIN_OUTPUT=$(xrandr | grep -E '^[^ ]+ connected' | grep -v 'HDMI' | grep -oE '^[^ ]+' | head -n 1)
+[[ -z "$MAIN_OUTPUT" ]] && {
+	echo "main output not found"
+	exit 1
+}
+
+HDMI_PORT=$(xrandr | grep 'HDMI[^\s]* connected' | grep -oE '^[^ ]+' | head -n 1)
+
+apply_wallpaper() {
+	[[ -d ~/.wallpaper ]] || return
+	local images=()
+	while IFS= read -r f; do
+		images+=("$f")
+	done < <(find ~/.wallpaper -type f -regextype posix-extended -regex ".*\.(jpg|png|jpeg)" | shuf | shuf | shuf | shuf)
+
+	[[ ${#images[@]} -eq 0 ]] && return
+
+	local args=()
+	while IFS= read -r output; do
+		# Pick a random image per monitor; wrap around if fewer images than monitors
+		local img="${images[$((RANDOM % ${#images[@]}))]}"
+		args+=(--bg-fill "$img")
+	done < <(xrandr | grep ' connected' | grep -oE '^[^ ]+')
+
+	feh --no-fehbg --preload --draw-exif "${args[@]}" &
+	# feh --bg-fill --draw-exif --recursive --randomize ~/.wallpaper/
+}
+
+if [ -n "$HDMI_PORT" ]; then
+	echo "main output: $MAIN_OUTPUT"
+	echo "hdmi connected: $HDMI_PORT"
+
+	xrandr --display $DISPLAY \
+		--output "$MAIN_OUTPUT" --auto --primary \
+		--output "$HDMI_PORT" --auto --left-of "$MAIN_OUTPUT"
+
+	apply_wallpaper
+else
+	echo "main output: $MAIN_OUTPUT"
+	echo "hdmi disconnected"
+
+	xrandr --display $DISPLAY \
+		--output "$MAIN_OUTPUT" --auto --primary
+
+	while IFS= read -r output; do
+		[[ "$output" == "$MAIN_OUTPUT" ]] && continue
+		echo "disabling: $output"
+		xrandr --output "$output" --off
+	done < <(xrandr | grep ' connected' | grep -oE '^[^ ]+')
+
+	apply_wallpaper
+fi
